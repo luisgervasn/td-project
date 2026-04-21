@@ -9,6 +9,9 @@ jobs:
   deploy:
     name: Deploy to GKE
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
     - name: Checkout code
@@ -17,7 +20,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -27,7 +31,6 @@ jobs:
       with:
         cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
         location: ${{ secrets.GKE_CLUSTER_ZONE }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Apply ConfigMap
       run: kubectl apply -f challenge3-configmap.yaml
